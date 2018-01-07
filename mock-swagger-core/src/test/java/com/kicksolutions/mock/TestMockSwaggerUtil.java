@@ -24,7 +24,7 @@ public class TestMockSwaggerUtil extends TestCase {
 	
 	public void testGetPetSucessResponse() {
 		if(StringUtils.isNotEmpty(swaggerPath)){
-			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true);
+			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true,false);
 			MockResponse expectedObject = mockSwaggerUtil.getRandomResponse("/v2/pet/{id}", "GET");
 			
 			if(!expectedObject.getResponseCode().equalsIgnoreCase("200") 
@@ -38,7 +38,7 @@ public class TestMockSwaggerUtil extends TestCase {
 	
 	public void testHeadPetSucessResponse() {
 		if(StringUtils.isNotEmpty(swaggerPath)){
-			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true);
+			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true,false);
 			
 			try{
 				mockSwaggerUtil.getRandomResponse("/v2/pet/{id}", "HEAD");
@@ -59,7 +59,7 @@ public class TestMockSwaggerUtil extends TestCase {
 	
 	public void testRandomPetResponse() {
 		if(StringUtils.isNotEmpty(swaggerPath)){
-			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, false);
+			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, false,false);
 			MockResponse expectedObject = mockSwaggerUtil.getRandomResponse("/v2/pet/{id}", "GET");
 			
 			if(expectedObject==null){
@@ -72,7 +72,7 @@ public class TestMockSwaggerUtil extends TestCase {
 	
 	public void testNoPath(){
 		if(StringUtils.isNotEmpty(swaggerPath)){
-			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true);
+			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true,false);
 			
 			try{
 				mockSwaggerUtil.getRandomResponse("/v2/pet/{id}/nonExistingPath", "GET");
@@ -93,7 +93,7 @@ public class TestMockSwaggerUtil extends TestCase {
 	
 	public void testSlashSucessResponse(){
 		if(StringUtils.isNotEmpty(swaggerPath)){
-			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true);
+			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true,false);
 			MockResponse expectedObject = mockSwaggerUtil.getRandomResponse("/example/", "GET");
 			
 			if(expectedObject==null){
@@ -106,7 +106,7 @@ public class TestMockSwaggerUtil extends TestCase {
 	
 	public void testV2SucessResponse(){
 		if(StringUtils.isNotEmpty(swaggerPath)){
-			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true);
+			MockSwaggerUtil mockSwaggerUtil = MockSwaggerUtil.getInstance(swaggerPath, true,false);
 			MockResponse expectedObject = mockSwaggerUtil.getRandomResponse("/example/v2", "GET");
 			
 			if(expectedObject==null){

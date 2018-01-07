@@ -21,7 +21,7 @@ paths:
                       {
                           "status": "CURRENT",
                           "updated": "2011-01-21T11:33:21Z",
-                          "id": "v2.0",
+                          "id": "v2.3",
                           "links": [
                               {
                                   "href": "http://127.0.0.1:8774/v2/",
@@ -52,7 +52,7 @@ paths:
                       {
                           "status": "CURRENT",
                           "updated": "2011-01-21T11:33:21Z",
-                          "id": "v2.0",
+                          "id": "v2.5",
                           "links": [
                               {
                                   "href": "http://127.0.0.1:8774/v2/",

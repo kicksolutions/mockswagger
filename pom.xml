@@ -8,7 +8,7 @@
 	<packaging>pom</packaging>
 
 	<url>https://github.com/kicksolutions/swagger2puml</url>
-	<name>mock-swagger-reactor</name>
+	<name>${project.groupId}:${project.artifactId}</name>
 	<description>Reactor POM for Mock server based on swagger </description>
 
 	<organization>

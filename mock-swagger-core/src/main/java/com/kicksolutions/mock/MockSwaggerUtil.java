@@ -1,6 +1,12 @@
 package com.kicksolutions.mock;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.nio.file.StandardWatchEventKinds;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +15,8 @@ import java.util.Random;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.SwingUtilities;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.util.UriTemplate;
@@ -33,14 +41,16 @@ public class MockSwaggerUtil {
 	private static MockSwaggerUtil INSTANCE = null;
 	private String swaggerFolderPath = null;
 	private boolean onlySucessResponses = false;
-	
+	private boolean softDeploy = true;
+
 	/**
 	 * 
 	 * @param swaggerFolderPath
 	 */
-	private MockSwaggerUtil(String swaggerFolderPath,boolean onlySucessResponses) {
+	private MockSwaggerUtil(String swaggerFolderPath, boolean onlySucessResponses,boolean softDeploy) {
 		this.swaggerFolderPath = swaggerFolderPath;
 		this.onlySucessResponses = onlySucessResponses;
+		this.softDeploy = softDeploy;
 		init();
 	}
 
@@ -49,9 +59,9 @@ public class MockSwaggerUtil {
 	 * @param swaggerFolderPath
 	 * @return
 	 */
-	public static MockSwaggerUtil getInstance(String swaggerFolderPath,boolean onlySucessResponses) {
+	public static MockSwaggerUtil getInstance(String swaggerFolderPath, boolean onlySucessResponses,boolean softDeploy) {
 		if (INSTANCE == null) {
-			INSTANCE = new MockSwaggerUtil(swaggerFolderPath,onlySucessResponses);
+			INSTANCE = new MockSwaggerUtil(swaggerFolderPath, onlySucessResponses,softDeploy);
 		}
 
 		return INSTANCE;
@@ -63,6 +73,16 @@ public class MockSwaggerUtil {
 	private void init() {
 		if (StringUtils.isNotEmpty(swaggerFolderPath)) {
 			process(swaggerFolderPath);
+			if(softDeploy)
+			{
+				SwingUtilities.invokeLater(new Runnable() {
+					
+					@Override
+					public void run() {
+						watchForChanges();						
+					}
+				});
+			}
 		} else {
 			LOGGER.log(Level.SEVERE, "No Input Folder Was provided");
 		}
@@ -73,20 +93,30 @@ public class MockSwaggerUtil {
 	 * @param swaggerFolder
 	 */
 	private void process(String swaggerFolder) {
+		swaggerMap.clear();
+		
 		File folder = new File(swaggerFolder);
 		if (folder.isDirectory()) {
 			File[] listOfFiles = folder.listFiles();
 
 			for (File swaggerDefinition : listOfFiles) {
-
-				if (swaggerDefinition.isFile() && (swaggerDefinition.getName().endsWith("yaml")
-						|| swaggerDefinition.getName().endsWith("yml")))
-
+				if (isYamlFile(swaggerDefinition)){
 					processSwagger(swaggerDefinition.getAbsolutePath());
+				}	
 			}
 		}
 
 		LOGGER.log(Level.INFO, "Map Object" + swaggerMap);
+	}
+	
+	/**
+	 * 
+	 * @param swaggerDefinition
+	 * @return
+	 */
+	private boolean isYamlFile(File swaggerDefinition){
+		return (swaggerDefinition.isFile() && (swaggerDefinition.getName().endsWith("yaml")
+				|| swaggerDefinition.getName().endsWith("yml")));
 	}
 
 	/**
@@ -114,7 +144,8 @@ public class MockSwaggerUtil {
 	 * @param pathObject
 	 */
 	private void processSwaggerPath(String basePath, String path, io.swagger.models.Path pathObject) {
-		String URI = new StringBuilder().append(StringUtils.isNotEmpty(basePath) ? basePath :"").append(path).toString();
+		String URI = new StringBuilder().append(StringUtils.isNotEmpty(basePath) ? basePath : "").append(path)
+				.toString();
 		populateSwaggerMap(URI, "GET", pathObject.getGet());
 		populateSwaggerMap(URI, "POST", pathObject.getPost());
 		populateSwaggerMap(URI, "DELETE", pathObject.getDelete());
@@ -152,33 +183,33 @@ public class MockSwaggerUtil {
 	public MockResponse getRandomResponse(String URI, String method) {
 		for (Map.Entry<String, Map<String, Object>> entrySet : swaggerMap.entrySet()) {
 
-			if (isURIMatch(URI, entrySet.getKey()) ) {
+			if (isURIMatch(URI, entrySet.getKey())) {
 				Map<String, Object> responseObject = entrySet.getValue();
 				Map<String, Response> responses = (Map<String, Response>) responseObject.get(method);
 
 				if (responses != null) {
-					
-					if(onlySucessResponses){
+
+					if (onlySucessResponses) {
 						return getSucessResponse(responses);
-					}else{
+					} else {
 						return getRandomResponse(responses);
 					}
-				}else{
-					throw new MockException(method,URI);
+				} else {
+					throw new MockException(method, URI);
 				}
 			}
 		}
 
-		throw new MockException(method,URI);
+		throw new MockException(method, URI);
 	}
-	
+
 	/**
 	 * 
 	 * @param sourceURI
 	 * @param targetURI
 	 * @return
 	 */
-	private boolean isURIMatch(String sourceURI, String targetURI){
+	private boolean isURIMatch(String sourceURI, String targetURI) {
 		UriTemplate uriTemplate = new UriTemplate(targetURI);
 		return uriTemplate.matches(sourceURI);
 	}
@@ -188,26 +219,26 @@ public class MockSwaggerUtil {
 	 * @param responses
 	 * @return
 	 */
-	private MockResponse getSucessResponse(Map<String, Response> responses){
+	private MockResponse getSucessResponse(Map<String, Response> responses) {
 		List<String> keys = new ArrayList<>();
 		Random random = new Random();
-		
+
 		for (Map.Entry<String, Response> entrySet : responses.entrySet()) {
-			if(entrySet.getKey()!=null && !entrySet.getKey().equalsIgnoreCase("default") && Integer.parseInt(entrySet.getKey())<400){
+			if (entrySet.getKey() != null && !entrySet.getKey().equalsIgnoreCase("default")
+					&& Integer.parseInt(entrySet.getKey()) < 400) {
 				keys.add(entrySet.getKey());
-			}			
+			}
 		}
-		
-		if(!keys.isEmpty())
-		{
+
+		if (!keys.isEmpty()) {
 			String sucessCode = keys.get(random.nextInt(keys.size()));
-			
-			return getRandomExamplesfromResponse(sucessCode,(Response)responses.get(sucessCode));
+
+			return getRandomExamplesfromResponse(sucessCode, (Response) responses.get(sucessCode));
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * 
 	 * @param responses
@@ -215,13 +246,13 @@ public class MockSwaggerUtil {
 	 */
 	private MockResponse getRandomResponse(Map<String, Response> responses) {
 		Random random = new Random();
-		
-		if(responses!=null){
+
+		if (responses != null) {
 			List<String> keys = new ArrayList<>(responses.keySet());
 			String randomKey = keys.get(random.nextInt(keys.size()));
-			return getRandomExamplesfromResponse(randomKey, (Response)responses.get(randomKey));
+			return getRandomExamplesfromResponse(randomKey, (Response) responses.get(randomKey));
 		}
-		
+
 		return null;
 	}
 
@@ -230,21 +261,54 @@ public class MockSwaggerUtil {
 	 * @param response
 	 * @return
 	 */
-	private MockResponse getRandomExamplesfromResponse(String responseCode, Response response){
+	private MockResponse getRandomExamplesfromResponse(String responseCode, Response response) {
 		Map<String, Object> examples = response.getExamples();
 		MockResponse mockResponse = null;
-				
-		if(examples!=null){
+
+		if (examples != null) {
 			Random random = new Random();
 			List<String> keys = new ArrayList<>(examples.keySet());
 			String randomKey = keys.get(random.nextInt(keys.size()));
-			mockResponse =  new MockResponse(responseCode, examples.get(randomKey),response.getDescription(),"application/json");
+			mockResponse = new MockResponse(responseCode, examples.get(randomKey), response.getDescription(),
+					"application/json");
+		} else {
+			LOGGER.log(Level.WARNING, "No Example Object Set for ResponseCode " + responseCode);
+			mockResponse = new MockResponse(responseCode, null, response.getDescription(), "application/json");
 		}
-		else{
-			LOGGER.log(Level.WARNING, "No Example Object Set for ResponseCode " +responseCode);
-			mockResponse = new MockResponse(responseCode, null, response.getDescription(),"application/json");
-		}
-		
+
 		return mockResponse;
+	}
+
+	private void watchForChanges() {
+		Path swaggerFolderPathObj = Paths.get(swaggerFolderPath);
+
+		try {
+			WatchService watcher = swaggerFolderPathObj.getFileSystem().newWatchService();
+			swaggerFolderPathObj.register(watcher, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE,
+					StandardWatchEventKinds.ENTRY_MODIFY);
+			
+			boolean valid = true;
+			
+			do{
+				WatchKey watckKey = watcher.take();
+
+				List<WatchEvent<?>> events = watckKey.pollEvents();
+				for (WatchEvent event : events) {
+					if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+						process(swaggerFolderPath);
+					}
+					if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
+						process(swaggerFolderPath);
+					}
+					if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
+						process(swaggerFolderPath);
+					}
+				}
+				valid = watckKey.reset();
+			}while(valid);
+			
+		} catch (Exception e) {
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+		}
 	}
 }

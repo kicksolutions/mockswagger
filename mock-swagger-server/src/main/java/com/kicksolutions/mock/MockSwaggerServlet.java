@@ -36,7 +36,7 @@ public class MockSwaggerServlet extends HttpServlet {
 		boolean mockSucessResponses = Boolean.parseBoolean(System.getProperty("mockSucessResponses", "false"));
 
 		if (StringUtils.isNotEmpty(definitionsPath)) {
-			mockSwaggerUtil = MockSwaggerUtil.getInstance(definitionsPath, mockSucessResponses);
+			mockSwaggerUtil = MockSwaggerUtil.getInstance(definitionsPath, mockSucessResponses,true);
 		} else {
 			throw new RuntimeException("Cannot Initialize MockSwaggerServlet");
 		}
