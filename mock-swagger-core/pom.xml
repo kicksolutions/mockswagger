@@ -1,0 +1,30 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>io.github.kicksolutions</groupId>
+		<artifactId>mock-swagger-reactor</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<groupId>io.github.kicksolutions</groupId>
+	<artifactId>mock-swagger-core</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<description>Core POM to upload Swagger to Confluence</description>
+
+	<packaging>jar</packaging>
+	<name>mock-swagger-core</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-parser</artifactId>
+		</dependency>
+	</dependencies>
+</project>
