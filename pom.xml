@@ -72,6 +72,7 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<version.swagger-parser>1.0.33</version.swagger-parser>
 		<version.junit>3.8.1</version.junit>
+		<version.org.springframework>4.3.7.RELEASE</version.org.springframework>
 	</properties>
 
 	<dependencyManagement>
@@ -87,14 +88,17 @@
 				<artifactId>swagger-parser</artifactId>
 				<version>${version.swagger-parser}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-web</artifactId>
+				<version>${version.org.springframework}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
 	<modules>
 		<module>mock-swagger-core</module>
-		<!--
 		<module>mock-swagger-server</module>
-		-->
 	</modules>
 
 	<build>

@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.util.UriTemplate;
 
 import com.kicksolutions.mock.vo.MockResponse;
 
@@ -113,8 +114,7 @@ public class MockSwaggerUtil {
 	 * @param pathObject
 	 */
 	private void processSwaggerPath(String basePath, String path, io.swagger.models.Path pathObject) {
-		String URI = new StringBuilder().append(StringUtils.isNotEmpty(basePath) ? basePath :"").append(path.replaceAll("\\{([^}]+)\\}", "\\\\{([^}]+)\\\\}"))
-				.toString();
+		String URI = new StringBuilder().append(StringUtils.isNotEmpty(basePath) ? basePath :"").append(path).toString();
 		populateSwaggerMap(URI, "GET", pathObject.getGet());
 		populateSwaggerMap(URI, "POST", pathObject.getPost());
 		populateSwaggerMap(URI, "DELETE", pathObject.getDelete());
@@ -152,7 +152,7 @@ public class MockSwaggerUtil {
 	public MockResponse getRandomResponse(String URI, String method) {
 		for (Map.Entry<String, Map<String, Object>> entrySet : swaggerMap.entrySet()) {
 
-			if (URI.matches(entrySet.getKey())) {
+			if (isURIMatch(URI, entrySet.getKey()) ) {
 				Map<String, Object> responseObject = entrySet.getValue();
 				Map<String, Response> responses = (Map<String, Response>) responseObject.get(method);
 
@@ -170,6 +170,17 @@ public class MockSwaggerUtil {
 		}
 
 		throw new MockException(method,URI);
+	}
+	
+	/**
+	 * 
+	 * @param sourceURI
+	 * @param targetURI
+	 * @return
+	 */
+	private boolean isURIMatch(String sourceURI, String targetURI){
+		UriTemplate uriTemplate = new UriTemplate(targetURI);
+		return uriTemplate.matches(sourceURI);
 	}
 
 	/**
@@ -227,11 +238,11 @@ public class MockSwaggerUtil {
 			Random random = new Random();
 			List<String> keys = new ArrayList<>(examples.keySet());
 			String randomKey = keys.get(random.nextInt(keys.size()));
-			mockResponse =  new MockResponse(responseCode, examples.get(randomKey),response.getDescription());
+			mockResponse =  new MockResponse(responseCode, examples.get(randomKey),response.getDescription(),"application/json");
 		}
 		else{
 			LOGGER.log(Level.WARNING, "No Example Object Set for ResponseCode " +responseCode);
-			mockResponse = new MockResponse(responseCode, null, response.getDescription());
+			mockResponse = new MockResponse(responseCode, null, response.getDescription(),"application/json");
 		}
 		
 		return mockResponse;
