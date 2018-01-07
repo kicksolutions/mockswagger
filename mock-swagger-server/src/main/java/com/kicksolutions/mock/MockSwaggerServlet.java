@@ -92,8 +92,8 @@ public class MockSwaggerServlet extends HttpServlet {
 				MockResponse response = mockSwaggerUtil.getRandomResponse(req.getRequestURI(), method);
 				
 				if(response!=null){
-					LOGGER.log(Level.INFO,response.getResponseCode());
-					LOGGER.log(Level.INFO,response.getMessage());
+					LOGGER.log(Level.FINEST,response.getResponseCode());
+					LOGGER.log(Level.FINEST,response.getMessage());
 					
 					String responseCode = response.getResponseCode();
 					
@@ -121,6 +121,7 @@ public class MockSwaggerServlet extends HttpServlet {
 					}
 				}
 				else{
+					LOGGER.log(Level.SEVERE,"Unable to Process");
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				}
 			}
