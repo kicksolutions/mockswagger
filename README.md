@@ -1,3 +1,7 @@
+[![Build Status](https://travis-ci.org/kicksolutions/mockswagger.svg?branch=master)](https://travis-ci.org/kicksolutions/mockswagger)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.swagger/swagger-codegen-project/badge.svg?style=plastic)](https://oss.sonatype.org/#nexus-search;gav~io.github.kicksolutions~mock-swagger-core~~~)
+[![codecov](https://codecov.io/gh/kicksolutions/swagger2puml/branch/master/graph/badge.svg)](https://codecov.io/gh/kicksolutions/mockswagger)
+
 # Mock Swagger
 
 This Creates a mock service for given swagger definitions.
