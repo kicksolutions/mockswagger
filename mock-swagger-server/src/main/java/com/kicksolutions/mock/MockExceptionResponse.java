@@ -11,6 +11,11 @@ public class MockExceptionResponse {
 	private String message;
 	private String rel;
 	private String traceid;
+	
+	public MockExceptionResponse() {
+		super();
+	}
+	
 	/**
 	 * @return the code
 	 */
