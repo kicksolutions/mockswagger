@@ -1,6 +1,11 @@
 package com.kicksolutions.mock;
 
-public class MockException {
+/**
+ * 
+ * @author MSANTOSH
+ *
+ */
+public class MockExceptionResponse {
 	private String code;
 	private String link;
 	private String message;

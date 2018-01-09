@@ -159,8 +159,8 @@ public class MockSwaggerServlet extends HttpServlet {
 	 * @param e
 	 * @return
 	 */
-	private MockException prepareException(String message,int code,String link){
-		MockException exception = new MockException();
+	private MockExceptionResponse prepareException(String message,int code,String link){
+		MockExceptionResponse exception = new MockExceptionResponse();
 		exception.setCode(String.valueOf(code));
 		exception.setLink(link);
 		exception.setMessage(message);
