@@ -41,6 +41,20 @@ public class MockSwaggerServlet extends HttpServlet {
 			throw new RuntimeException("Cannot Initialize MockSwaggerServlet");
 		}
 	}
+	
+	public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (request.getMethod().equalsIgnoreCase("PATCH")){
+           doPatch(request, response);
+        } else {
+            super.service(request, response);
+        }
+    }
+	
+	
+
+	protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+		processMockRequest(request, response, "PATCH");		
+	}
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -71,7 +85,7 @@ public class MockSwaggerServlet extends HttpServlet {
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		processMockRequest(req, resp, "PUT");
 	}
-
+	
 	/**
 	 * 
 	 * @param req
@@ -83,7 +97,7 @@ public class MockSwaggerServlet extends HttpServlet {
 	private void processMockRequest(HttpServletRequest req, HttpServletResponse resp,String method)
 			throws IOException, JsonProcessingException {
 		String contentType = req.getContentType();
-		
+				
 		if(StringUtils.isNotEmpty(contentType) && contentType.equalsIgnoreCase("application/json")){
 			
 			LOGGER.log(Level.INFO, "Processing Request for "+ req.getRequestURI() + " Method: "+ method);
@@ -100,6 +114,7 @@ public class MockSwaggerServlet extends HttpServlet {
 					if(responseCode.equalsIgnoreCase("default") 
 							|| (!responseCode.equalsIgnoreCase("default") && Integer.parseInt(responseCode)>=400)){
 						resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,StringUtils.isNotEmpty(response.getMessage()) ? response.getMessage() : "Error Occured");
+						resp.getWriter().write(new ObjectMapper().writeValueAsString(prepareException(StringUtils.isNotEmpty(response.getMessage()) ? response.getMessage() : "Error Occured", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, req.getRequestURI())));
 					}
 					else{ 
 						resp.setContentType("application/json");
@@ -123,16 +138,35 @@ public class MockSwaggerServlet extends HttpServlet {
 				else{
 					LOGGER.log(Level.SEVERE,"Unable to Process");
 					resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+					resp.getWriter().write(new ObjectMapper().writeValueAsString(prepareException("No Mock Response Found", HttpServletResponse.SC_INTERNAL_SERVER_ERROR, req.getRequestURI())));
 				}
 			}
 			catch(MockException ex){
 				LOGGER.log(Level.SEVERE,ex.getMessage(),ex);
 				resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+				resp.getWriter().write(new ObjectMapper().writeValueAsString(prepareException(ex.getMessage(), HttpServletResponse.SC_METHOD_NOT_ALLOWED, req.getRequestURI())));
 			}
 		}
 		else{
 			LOGGER.log(Level.SEVERE,"Content Type is Not Set or Was Set Other than application/json");
 			resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			resp.getWriter().write(new ObjectMapper().writeValueAsString(prepareException("Content Type is Not Set or Was Set Other than application/json", HttpServletResponse.SC_BAD_REQUEST, req.getRequestURI())));
 		}
+	}
+	
+	/**
+	 * 
+	 * @param e
+	 * @return
+	 */
+	private MockException prepareException(String message,int code,String link){
+		MockException exception = new MockException();
+		exception.setCode(String.valueOf(code));
+		exception.setLink(link);
+		exception.setMessage(message);
+		exception.setRel("self");
+		exception.setTraceid(String.valueOf(code));
+		
+		return exception;
 	}
 }
