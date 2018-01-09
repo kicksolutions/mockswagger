@@ -3,10 +3,10 @@ package com.kicksolutions.mock;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardWatchEventKinds;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.nio.file.StandardWatchEventKinds;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +26,7 @@ import com.kicksolutions.mock.vo.MockResponse;
 import io.swagger.models.Operation;
 import io.swagger.models.Response;
 import io.swagger.models.Swagger;
+import io.swagger.models.parameters.Parameter;
 import io.swagger.parser.SwaggerParser;
 
 /**
@@ -37,7 +38,8 @@ public class MockSwaggerUtil {
 
 	private static final Logger LOGGER = Logger.getLogger(MockSwaggerUtil.class.getName());
 
-	private static Map<String, Map<String, Object>> swaggerMap = new TreeMap<>();
+	private static Map<String, Map<String, Map<String, Response>>> swaggerResponseMap = new TreeMap<>();
+	private static Map<String, Map<String, List<Parameter>>> swaggerRequestMap = new TreeMap<>();
 	private static MockSwaggerUtil INSTANCE = null;
 	private String swaggerFolderPath = null;
 	private boolean onlySucessResponses = false;
@@ -93,7 +95,8 @@ public class MockSwaggerUtil {
 	 * @param swaggerFolder
 	 */
 	private void process(String swaggerFolder) {
-		swaggerMap.clear();
+		swaggerResponseMap.clear();
+		swaggerRequestMap.clear();
 		
 		File folder = new File(swaggerFolder);
 		if (folder.isDirectory()) {
@@ -106,7 +109,7 @@ public class MockSwaggerUtil {
 			}
 		}
 
-		LOGGER.log(Level.INFO, "Map Object" + swaggerMap);
+		LOGGER.log(Level.INFO, "Map Object" + swaggerResponseMap);
 	}
 	
 	/**
@@ -162,15 +165,41 @@ public class MockSwaggerUtil {
 	 */
 	private void populateSwaggerMap(String URI, String method, Operation operation) {
 		if (operation != null) {
-			Map<String, Object> responseObject = new HashMap<>();
+			Map<String, Map<String, Response>> responseObject = new HashMap<>();
 			responseObject.put(method, operation.getResponses());
 
-			if (swaggerMap.containsKey(URI)) {
-				responseObject.putAll(swaggerMap.get(URI));
+			if (swaggerResponseMap.containsKey(URI)) {
+				responseObject.putAll(swaggerResponseMap.get(URI));
 			}
 
-			swaggerMap.put(URI, responseObject);
+			swaggerResponseMap.put(URI, responseObject);
+			
+			Map<String, List<Parameter>> requestObject = new HashMap<>();
+			requestObject.put(method, operation.getParameters());
+
+			if (swaggerRequestMap.containsKey(URI)) {
+				requestObject.putAll(swaggerRequestMap.get(URI));
+			}
+			
+			swaggerRequestMap.put(URI, requestObject);
 		}
+	}
+	
+	/**
+	 * 
+	 * @param URI
+	 * @param method
+	 * @return
+	 */
+	public List<Parameter> getAllRequestParameters(String URI, String method){
+		for (Map.Entry<String, Map<String, List<Parameter>>> entrySet : swaggerRequestMap.entrySet()) {
+			if (isURIMatch(URI, entrySet.getKey())) {
+				Map<String, List<Parameter>> requestObject = entrySet.getValue();
+				return requestObject.get(method);
+			}
+		}
+		
+		return null;
 	}
 
 	/**
@@ -179,13 +208,12 @@ public class MockSwaggerUtil {
 	 * @param method
 	 * @return
 	 */
-	@SuppressWarnings("unchecked")
 	public MockResponse getRandomResponse(String URI, String method) {
-		for (Map.Entry<String, Map<String, Object>> entrySet : swaggerMap.entrySet()) {
+		for (Map.Entry<String, Map<String, Map<String, Response>>> entrySet : swaggerResponseMap.entrySet()) {
 
 			if (isURIMatch(URI, entrySet.getKey())) {
-				Map<String, Object> responseObject = entrySet.getValue();
-				Map<String, Response> responses = (Map<String, Response>) responseObject.get(method);
+				Map<String, Map<String, Response>> responseObject = entrySet.getValue();
+				Map<String, Response> responses = responseObject.get(method);
 
 				if (responses != null) {
 
