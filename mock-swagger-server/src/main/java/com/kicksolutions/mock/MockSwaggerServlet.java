@@ -102,8 +102,12 @@ public class MockSwaggerServlet extends HttpServlet {
 		String contentType = req.getContentType();
 		resp.setContentType("application/json");
 		resp.setCharacterEncoding("utf-8");
+		
+		if (!StringUtils.isNotEmpty(contentType)){
+			contentType = "application/json"; // If No Content Type was set
+		}		
 
-		if (StringUtils.isNotEmpty(contentType) && contentType.equalsIgnoreCase("application/json") && ("GET" != method.intern())) {
+		if (StringUtils.isNotEmpty(contentType) && contentType.equalsIgnoreCase("application/json")) {
 
 			LOGGER.log(Level.INFO, "Processing Request for " + req.getRequestURI() + " Method: " + method);
 
