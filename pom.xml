@@ -72,7 +72,7 @@
 		<maven.compiler.target>1.7</maven.compiler.target>
 		<version.swagger-parser>1.0.33</version.swagger-parser>
 		<version.junit>3.8.1</version.junit>
-		<version.org.springframework>4.3.7.RELEASE</version.org.springframework>
+		<version.org.springframework>6.0.0</version.org.springframework>
 	</properties>
 
 	<dependencyManagement>
